@@ -35,9 +35,27 @@ func (i *arrayFlags) Set(value string) error {
 	return nil
 }
 
+type mapFlags map[string]struct{}
+
+func (i *mapFlags) String() string {
+	names := make([]string, 0, len(*i))
+	for name, _ := range *i {
+		names = append(names, name)
+	}
+	return strings.Join(names, ",")
+}
+
+func (i *mapFlags) Set(value string) error {
+	(*i)[value] = struct{}{}
+	return nil
+}
+
 var (
-	logPaths  arrayFlags
-	outputDir string
+	logPaths        arrayFlags
+	filterDBs       mapFlags
+	filterWorkloads mapFlags
+	outputDir       string
+	onlyDBName      bool
 )
 
 func init() {
@@ -45,6 +63,11 @@ func init() {
 	flag.StringVar(&outputDir, "o", "./output", "Output directory")
 	flag.IntVar(&plotXLength, "x", 8, "X axis Inch length of Output chart")
 	flag.IntVar(&plotYLength, "y", 4, "Y axis Inch length of Output chart")
+	filterDBs = make(mapFlags, 0)
+	filterWorkloads = make(mapFlags, 0)
+	flag.Var(&filterDBs, "d", "Filter database")
+	flag.Var(&filterWorkloads, "w", "Filter workload")
+	flag.BoolVar(&onlyDBName, "i", false, "Use only db name for identification in the chart")
 }
 
 func perr(err error) {
@@ -77,6 +100,22 @@ func parseName(pathName string) (db string, workload string) {
 	return db, workload
 }
 
+func isFiltered(db string, workload string) bool {
+	if len(filterDBs) == 0 && len(filterWorkloads) == 0 {
+		return true
+	}
+	_, ok1 := filterDBs[db]
+	_, ok2 := filterWorkloads[workload]
+
+	if len(filterDBs) > 0 && !ok1 {
+		return false
+	} else if len(filterWorkloads) > 0 && !ok2 {
+		return false
+	}
+
+	return true
+}
+
 func main() {
 	flag.Parse()
 	workloads := make(map[string]dbStats)
@@ -95,6 +134,9 @@ func main() {
 			db, workload := parseName(path)
 			if db == "" || workload == "" {
 				// invalid format
+				return nil
+			} else if !isFiltered(db, workload) {
+				// we don't care these db and workload
 				return nil
 			}
 

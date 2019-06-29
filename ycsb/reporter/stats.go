@@ -148,7 +148,11 @@ func newDBStat(db string, workload string, pathName string) (*dbStat, error) {
 	// We assume we put all logs in one unique directory in each benchmark.
 	// E.g, we can use Git commit as the parent directory for benchmarking special version,
 	// use datetime for benchmarking different databases.
-	s.name = fmt.Sprintf("%s-%s", db, path.Base(filepath.Dir(pathName)))
+	if !onlyDBName {
+		s.name = fmt.Sprintf("%s-%s", db, path.Base(filepath.Dir(pathName)))
+	} else {
+		s.name = db
+	}
 	s.db = db
 	s.workload = workload
 

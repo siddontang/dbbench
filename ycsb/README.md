@@ -40,8 +40,8 @@ OUTPUT=./2.1 ./bench.ch load raw -p tikv.pd=pd_2.1
 # Load data into TiKV 3.0
 OUTPUT=./3.0 ./bench.ch load raw -p tikv.pd=pd_3.0
 
-# You must use different directories for benchmarking same databse, the ycsb-reporter will use 
-# `raw-3.0` and `raw-2.1` to distinguish the results in the output charts. 
+# You must use different directories for benchmarking the same database, the ycsb-reporter will use 
+# `raw-3.0` and `raw-2.1` (the name format is db-parentDir) to distinguish the results in the output charts. 
 ycsb-reporter -p 2.1 -p 3.0 -o var 
 ```
 
@@ -53,7 +53,21 @@ If you want to compare different databases, you can save all data in one directo
 # Benchmark TiKV with TiKV mode
 ./bench.ch load tivk
 
-ycsb-reporter -p ./logs -o var
+# Passing -i here to tell reporter to use db name only (no need to include the parent directory) as identification in the chart, 
+ycsb-reporter -p ./logs -o var -i
+```
+
+If you only want to care some workloads or some databases, you can do:
+
+```bash
+# Only care tikv and raw
+ycsb-reporter -p ./logs -o var -d tikv -d raw
+
+# Only care load
+ycsb-reporter -p ./logs -o var -w load
+
+# Only care raw and load
+ycsb-reporter -p ./logs -o var -d raw -w load
 ```
 
 The output chart may look like:
