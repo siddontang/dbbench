@@ -59,3 +59,5 @@ ycsb-reporter -p ./logs -o var
 The output chart may look like:
 
 ![](./examples/result/load/load_ops_prog.png)
+
+You can see more examples [here](./exmaples)
