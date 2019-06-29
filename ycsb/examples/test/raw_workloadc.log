@@ -1,0 +1,21 @@
+***************** properties *****************
+"workload"="core"
+"readproportion"="1"
+"threadcount"="100"
+"insertproportion"="0"
+"requestdistribution"="zipfian"
+"readallfields"="true"
+"fieldcount"="10"
+"scanproportion"="0"
+"recordcount"="1000000"
+"updateproportion"="0"
+"maxscanlength"="10"
+"operationcount"="1000000"
+"tikv.type"="raw"
+"fieldlength"="100"
+"dotransactions"="true"
+**********************************************
+READ - Takes(s): 10.0, Count: 373246, OPS: 37469.6, Avg(us): 2672, Min(us): 361, Max(us): 40498, 95th(us): 5000, 99th(us): 7000
+READ - Takes(s): 20.0, Count: 736892, OPS: 36916.9, Avg(us): 2707, Min(us): 294, Max(us): 40498, 95th(us): 5000, 99th(us): 7000
+Run finished, takes 27.136645191s
+READ - Takes(s): 27.1, Count: 999994, OPS: 36904.1, Avg(us): 2699, Min(us): 233, Max(us): 40498, 95th(us): 5000, 99th(us): 7000

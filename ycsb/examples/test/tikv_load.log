@@ -1,0 +1,23 @@
+***************** properties *****************
+"threadcount"="100"
+"fieldcount"="10"
+"maxscanlength"="10"
+"tikv.type"="txn"
+"dotransactions"="false"
+"fieldlength"="100"
+"operationcount"="1000000"
+"recordcount"="1000000"
+"dropdata"="true"
+"workload"="core"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 124433, OPS: 12505.3, Avg(us): 8000, Min(us): 3254, Max(us): 56114, 95th(us): 13000, 99th(us): 21000
+INSERT - Takes(s): 20.0, Count: 246963, OPS: 12378.9, Avg(us): 8045, Min(us): 3200, Max(us): 58670, 95th(us): 13000, 99th(us): 22000
+INSERT - Takes(s): 30.0, Count: 359292, OPS: 11996.3, Avg(us): 8316, Min(us): 3200, Max(us): 78891, 95th(us): 14000, 99th(us): 24000
+INSERT - Takes(s): 40.0, Count: 465568, OPS: 11653.6, Avg(us): 8557, Min(us): 3200, Max(us): 78891, 95th(us): 15000, 99th(us): 27000
+INSERT - Takes(s): 50.0, Count: 568190, OPS: 11375.1, Avg(us): 8763, Min(us): 3200, Max(us): 78891, 95th(us): 15000, 99th(us): 27000
+INSERT - Takes(s): 60.0, Count: 676192, OPS: 11279.2, Avg(us): 8838, Min(us): 3200, Max(us): 78891, 95th(us): 15000, 99th(us): 27000
+INSERT - Takes(s): 70.0, Count: 781592, OPS: 11173.5, Avg(us): 8921, Min(us): 2794, Max(us): 537943, 95th(us): 15000, 99th(us): 26000
+INSERT - Takes(s): 80.0, Count: 885820, OPS: 11079.6, Avg(us): 8995, Min(us): 1182, Max(us): 537943, 95th(us): 15000, 99th(us): 26000
+INSERT - Takes(s): 90.0, Count: 980565, OPS: 10901.2, Avg(us): 9142, Min(us): 1182, Max(us): 537943, 95th(us): 15000, 99th(us): 27000
+Run finished, takes 1m31.918911853s
+INSERT - Takes(s): 91.9, Count: 999998, OPS: 10885.0, Avg(us): 9132, Min(us): 862, Max(us): 537943, 95th(us): 15000, 99th(us): 27000

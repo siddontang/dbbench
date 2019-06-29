@@ -1,0 +1,28 @@
+***************** properties *****************
+"workload"="core"
+"scanproportion"="0"
+"updateproportion"="0"
+"insertproportion"="0.05"
+"readallfields"="true"
+"dotransactions"="true"
+"fieldlength"="100"
+"maxscanlength"="10"
+"tikv.type"="txn"
+"operationcount"="1000000"
+"requestdistribution"="latest"
+"recordcount"="1000000"
+"readproportion"="0.95"
+"fieldcount"="10"
+"threadcount"="100"
+**********************************************
+INSERT - Takes(s): 9.9, Count: 11111, OPS: 1117.9, Avg(us): 15641, Min(us): 5645, Max(us): 63412, 95th(us): 25000, 99th(us): 32000
+READ - Takes(s): 10.0, Count: 208765, OPS: 20973.4, Avg(us): 3947, Min(us): 509, Max(us): 52065, 95th(us): 7000, 99th(us): 9000
+INSERT - Takes(s): 19.9, Count: 22217, OPS: 1114.3, Avg(us): 15439, Min(us): 5139, Max(us): 63412, 95th(us): 24000, 99th(us): 31000
+READ - Takes(s): 20.0, Count: 422670, OPS: 21182.4, Avg(us): 3910, Min(us): 509, Max(us): 52065, 95th(us): 7000, 99th(us): 9000
+INSERT - Takes(s): 29.9, Count: 33756, OPS: 1127.5, Avg(us): 15295, Min(us): 4175, Max(us): 63412, 95th(us): 24000, 99th(us): 31000
+READ - Takes(s): 30.0, Count: 637172, OPS: 21271.8, Avg(us): 3889, Min(us): 509, Max(us): 52065, 95th(us): 7000, 99th(us): 9000
+READ - Takes(s): 40.0, Count: 852239, OPS: 21330.6, Avg(us): 3876, Min(us): 509, Max(us): 52065, 95th(us): 7000, 99th(us): 9000
+INSERT - Takes(s): 39.9, Count: 45137, OPS: 1130.2, Avg(us): 15259, Min(us): 4017, Max(us): 63412, 95th(us): 24000, 99th(us): 31000
+Run finished, takes 44.573876347s
+READ - Takes(s): 44.5, Count: 949772, OPS: 21330.2, Avg(us): 3860, Min(us): 290, Max(us): 52065, 95th(us): 7000, 99th(us): 9000
+INSERT - Takes(s): 44.5, Count: 50223, OPS: 1128.3, Avg(us): 15186, Min(us): 1096, Max(us): 63412, 95th(us): 24000, 99th(us): 31000

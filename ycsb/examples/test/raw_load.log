@@ -1,0 +1,17 @@
+***************** properties *****************
+"workload"="core"
+"operationcount"="1000000"
+"dotransactions"="false"
+"recordcount"="1000000"
+"fieldcount"="10"
+"maxscanlength"="10"
+"tikv.type"="raw"
+"fieldlength"="100"
+"dropdata"="true"
+"threadcount"="100"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 291957, OPS: 29339.5, Avg(us): 3390, Min(us): 389, Max(us): 64836, 95th(us): 7000, 99th(us): 12000
+INSERT - Takes(s): 20.0, Count: 558741, OPS: 28004.2, Avg(us): 3545, Min(us): 375, Max(us): 519507, 95th(us): 7000, 99th(us): 13000
+INSERT - Takes(s): 30.0, Count: 822030, OPS: 27445.7, Avg(us): 3614, Min(us): 375, Max(us): 529618, 95th(us): 7000, 99th(us): 13000
+Run finished, takes 38.109028081s
+INSERT - Takes(s): 38.1, Count: 999994, OPS: 26274.5, Avg(us): 3746, Min(us): 315, Max(us): 529618, 95th(us): 8000, 99th(us): 13000
