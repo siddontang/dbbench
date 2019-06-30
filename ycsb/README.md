@@ -2,7 +2,7 @@
 
 ## Benchmark 
 
-The script `./bench.ch` can help you run go-ycsb to benchmark different. Below are some examples:
+The script `./bench.ch` can help you run [go-ycsb](https://github.com/pingcap/go-ycsb) to benchmark different. Below are some examples:
 
 ```bash
 # Load data into TiKV with Raw mode
