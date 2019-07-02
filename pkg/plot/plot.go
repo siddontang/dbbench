@@ -71,7 +71,12 @@ type Meta struct {
 }
 
 func (m Meta) outputPath(tp stats.StatType, suffix string) string {
-	baseName := fmt.Sprintf("%s_%s_%s.png", m.Workload, tp, suffix)
+	var baseName string
+	if m.OP == "" {
+		baseName = fmt.Sprintf("%s_%s_%s.png", m.Workload, tp, suffix)
+	} else {
+		baseName = fmt.Sprintf("%s_%s_%s_%s.png", m.Workload, m.OP, tp, suffix)
+	}
 	return path.Join(m.OutputDir, m.Workload, baseName)
 }
 
