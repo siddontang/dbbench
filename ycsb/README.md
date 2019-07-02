@@ -2,17 +2,17 @@
 
 ## Benchmark 
 
-The script `./bench.ch` can help you run [go-ycsb](https://github.com/pingcap/go-ycsb) to benchmark different. Below are some examples:
+The script `./bench.sh` can help you run [go-ycsb](https://github.com/pingcap/go-ycsb) to benchmark different databases. Below are some examples:
 
 ```bash
 # Load data into TiKV with Raw mode
-./bench.ch load raw -p tikv.pd=127.0.0.1:2379
+./bench.sh load raw -p tikv.pd=127.0.0.1:2379
 
 # Run workloads a, b, ... e for TiKV with Raw mode
-./bench.ch run raw -p tikv.pd=127.0.0.1:2379
+./bench.sh run raw -p tikv.pd=127.0.0.1:2379
 
 # Run benchmark and output the result to the OUTPUT directory
-OUTPUT=./20190601 ./bench.ch load raw
+OUTPUT=./20190601 ./bench.sh load raw
 ```
 
 ## Reporter
@@ -35,10 +35,10 @@ Please notice that you must use the same workload to do the benchmark, and save 
 
 ```bash
 # Load data into TiKV 2.1 
-OUTPUT=./2.1 ./bench.ch load raw -p tikv.pd=pd_2.1
+OUTPUT=./2.1 ./bench.sh load raw -p tikv.pd=pd_2.1
 
 # Load data into TiKV 3.0
-OUTPUT=./3.0 ./bench.ch load raw -p tikv.pd=pd_3.0
+OUTPUT=./3.0 ./bench.sh load raw -p tikv.pd=pd_3.0
 
 # You must use different directories for benchmarking the same database, the ycsb-reporter will use 
 # `raw-3.0` and `raw-2.1` (the name format is db-parentDir) to distinguish the results in the output charts. 
@@ -49,9 +49,9 @@ If you want to compare different databases, you can save all data in one directo
 
 ```bash
 # Benchmark TiKV with Raw mode
-./bench.ch load raw
+./bench.sh load raw
 # Benchmark TiKV with TiKV mode
-./bench.ch load tivk
+./bench.sh load tivk
 
 # Passing -i here to tell reporter to use db name only (no need to include the parent directory) as identification in the chart, 
 ycsb-reporter -p ./logs -o var -i
