@@ -2,12 +2,11 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/siddontang/dbbench/pkg/stats"
 )
 
 var (
@@ -21,36 +20,13 @@ var (
 	}
 )
 
-type StatType int
-
-const (
-	OPS StatType = iota
-	P99
-)
-
-func (s StatType) String() string {
-	switch s {
-	case OPS:
-		return "ops"
-	case P99:
-		return "p99(us)"
-	default:
-		return ""
-	}
-}
-
-type stat struct {
-	ops float64
-	p99 float64
-}
-
-func statFieldFunc(c rune) bool {
+func recordFieldFunc(c rune) bool {
 	return c == ':' || c == ','
 }
 
-func newStat(line string) (*stat, error) {
-	kvs := strings.FieldsFunc(line, statFieldFunc)
-	s := stat{}
+func newRecord(line string) (*stats.Record, error) {
+	kvs := strings.FieldsFunc(line, recordFieldFunc)
+	s := stats.Record{}
 	if len(kvs)%2 != 0 {
 		println(line)
 	}
@@ -61,44 +37,16 @@ func newStat(line string) (*stat, error) {
 		}
 		switch strings.TrimSpace(kvs[i]) {
 		case "OPS":
-			s.ops = v
+			s.OPS = v
 		case "99th(us)":
-			s.p99 = v
+			s.P99 = v / 1000.0
 		default:
 		}
 	}
 	return &s, nil
 }
 
-func (s *stat) Value(tp StatType) float64 {
-	switch tp {
-	case OPS:
-		return s.ops
-	case P99:
-		return s.p99
-	default:
-		perr(fmt.Errorf("unsupported stat type"))
-		return 0.0
-	}
-}
-
-type dbStat struct {
-	name     string
-	db       string
-	workload string
-	summary  map[string]*stat
-	progress map[string][]*stat
-}
-
-func (s *dbStat) Operations() []string {
-	names := make([]string, 0, len(s.summary))
-	for name, _ := range s.summary {
-		names = append(names, name)
-	}
-	return names
-}
-
-func (s *dbStat) parse(pathName string) error {
+func parse(workload string, pathName string, s *stats.DBStat) error {
 	file, err := os.Open(pathName)
 	if err != nil {
 		return err
@@ -121,16 +69,20 @@ func (s *dbStat) parse(pathName string) error {
 			continue
 		}
 
-		stat, err := newStat(strings.TrimSpace(seps[1]))
+		if workload == "laod" {
+			op = ""
+		}
+
+		r, err := newRecord(strings.TrimSpace(seps[1]))
 		if err != nil {
 			return err
 		}
 
 		if handleSummary {
 			// handle summary logs
-			s.summary[op] = stat
+			s.Summary[op] = r
 		} else {
-			s.progress[op] = append(s.progress[op], stat)
+			s.Progress[op] = append(s.Progress[op], r)
 		}
 	}
 
@@ -140,38 +92,16 @@ func (s *dbStat) parse(pathName string) error {
 	return nil
 }
 
-func newDBStat(db string, workload string, pathName string) (*dbStat, error) {
-	s := new(dbStat)
-	s.summary = make(map[string]*stat, 1)
-	s.progress = make(map[string][]*stat, 1)
-
-	// We assume we put all logs in one unique directory in each benchmark.
-	// E.g, we can use Git commit as the parent directory for benchmarking special version,
-	// use datetime for benchmarking different databases.
-	if !onlyDBName {
-		s.name = fmt.Sprintf("%s-%s", db, path.Base(filepath.Dir(pathName)))
-	} else {
-		s.name = db
+func newDBStat(db string, workload string, pathName string) (*stats.DBStat, error) {
+	name := pathName
+	if onlyDBName {
+		name = ""
 	}
-	s.db = db
-	s.workload = workload
+	s := stats.NewDBStat(db, workload, name)
 
-	if err := s.parse(pathName); err != nil {
+	if err := parse(workload, pathName, s); err != nil {
 		return nil, err
 	}
 
 	return s, nil
-}
-
-type dbStats []*dbStat
-
-func (a dbStats) Len() int      { return len(a) }
-func (a dbStats) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a dbStats) Less(i, j int) bool {
-	if a[i].db < a[j].db {
-		return true
-	} else if a[i].name < a[j].name {
-		return true
-	}
-	return false
 }

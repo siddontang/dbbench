@@ -22,40 +22,20 @@ import (
 	"runtime/debug"
 	"sort"
 	"strings"
+
+	"github.com/siddontang/dbbench/pkg/flags"
+	"github.com/siddontang/dbbench/pkg/plot"
+	"github.com/siddontang/dbbench/pkg/stats"
 )
 
-type arrayFlags []string
-
-func (i *arrayFlags) String() string {
-	return strings.Join(*i, ",")
-}
-
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
-
-type mapFlags map[string]struct{}
-
-func (i *mapFlags) String() string {
-	names := make([]string, 0, len(*i))
-	for name, _ := range *i {
-		names = append(names, name)
-	}
-	return strings.Join(names, ",")
-}
-
-func (i *mapFlags) Set(value string) error {
-	(*i)[value] = struct{}{}
-	return nil
-}
-
 var (
-	logPaths        arrayFlags
-	filterDBs       mapFlags
-	filterWorkloads mapFlags
+	logPaths        flags.ArrayFlags
+	filterDBs       flags.SetFlags
+	filterWorkloads flags.SetFlags
 	outputDir       string
 	onlyDBName      bool
+	plotXLength     int
+	plotYLength     int
 )
 
 func init() {
@@ -63,8 +43,8 @@ func init() {
 	flag.StringVar(&outputDir, "o", "./output", "Output directory")
 	flag.IntVar(&plotXLength, "x", 8, "X axis Inch length of Output chart")
 	flag.IntVar(&plotYLength, "y", 4, "Y axis Inch length of Output chart")
-	filterDBs = make(mapFlags, 0)
-	filterWorkloads = make(mapFlags, 0)
+	filterDBs = make(flags.SetFlags, 0)
+	filterWorkloads = make(flags.SetFlags, 0)
 	flag.Var(&filterDBs, "d", "Filter database")
 	flag.Var(&filterWorkloads, "w", "Filter workload")
 	flag.BoolVar(&onlyDBName, "i", false, "Use only db name for identification in the chart")
@@ -118,7 +98,7 @@ func isFiltered(db string, workload string) bool {
 
 func main() {
 	flag.Parse()
-	workloads := make(map[string]dbStats)
+	workloads := make(map[string]stats.DBStats)
 
 	for _, logPath := range logPaths {
 		err := filepath.Walk(logPath, func(path string, f os.FileInfo, err error) error {
@@ -150,6 +130,16 @@ func main() {
 		perr(err)
 	}
 
+	m := plot.Meta{
+		OutputDir: outputDir,
+		XLength:   plotXLength,
+		YLength:   plotYLength,
+		StatTypes: []stats.StatType{
+			stats.OPS,
+			stats.P99,
+		},
+	}
+
 	for workload, stats := range workloads {
 		sort.Sort(stats)
 
@@ -158,7 +148,9 @@ func main() {
 		operations := stats[0].Operations()
 
 		for _, op := range operations {
-			err := plotCharts(workload, op, stats)
+			m.Workload = workload
+			m.OP = op
+			err := plot.PlotCharts(m, stats)
 			perr(err)
 		}
 	}
