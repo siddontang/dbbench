@@ -11,7 +11,8 @@ type StatType int
 
 // Different statistics for different benchmark tools.
 const (
-	OPS StatType = iota
+	None StatType = iota
+	OPS
 	P99
 	P95
 	TPS

@@ -1,0 +1,45 @@
+sysbench 1.1.0-faaff4f (using system LuaJIT 2.0.5)
+
+Running the test with following options:
+Number of threads: 32
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 32 tps: 15382.58 qps: 15382.58 (r/w/o: 15382.58/0.00/0.00) lat (ms,95%): 3.49 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 32 tps: 15717.97 qps: 15717.97 (r/w/o: 15717.97/0.00/0.00) lat (ms,95%): 3.19 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 32 tps: 15460.70 qps: 15460.70 (r/w/o: 15460.70/0.00/0.00) lat (ms,95%): 3.36 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 32 tps: 14384.12 qps: 14384.12 (r/w/o: 14384.12/0.00/0.00) lat (ms,95%): 3.55 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 32 tps: 13190.79 qps: 13190.79 (r/w/o: 13190.79/0.00/0.00) lat (ms,95%): 4.03 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 31 tps: 15531.05 qps: 15531.05 (r/w/o: 15531.05/0.00/0.00) lat (ms,95%): 3.19 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            896736
+        write:                           0
+        other:                           0
+        total:                           896736
+    transactions:                        896736 (14944.62 per sec.)
+    queries:                             896736 (14944.62 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+Throughput:
+    events/s (eps):                      14944.6191
+    time elapsed:                        60.0039s
+    total number of events:              896736
+
+Latency (ms):
+         min:                                    0.32
+         avg:                                    2.14
+         max:                                  111.42
+         95th percentile:                        3.49
+         sum:                              1919397.36
+
+Threads fairness:
+    events (avg/stddev):           28023.0000/43.05
+    execution time (avg/stddev):   59.9812/0.00
+

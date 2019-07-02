@@ -11,12 +11,14 @@ mkdir -p ${OUTPUT}
 
 THREADS=${THREADS:-32}
 TABLES=${TABLES:-1}
-TABLE_SIZE=${TABLE_SIZE:-100000}
+TABLE_SIZE=${TABLE_SIZE:-1000000}
 
 HOST=${HOST:-127.0.0.1}
 PORT=${PORT:-4000}
 DB_USER=${DB_USER:-root}
 DB=${DB:-sbtest}
+
+RNAD_TYPE=${RNAD_TYPE:-uniform}
 
 # Used in prepare
 DROPDATA=1
@@ -26,6 +28,7 @@ REPORT_INTERVAL=${REPORT_INTERVAL:-10}
 
 OPTS="--report-interval=${REPORT_INTERVAL} \
     --time=${TIME} \
+    --rand-type=${RNAD_TYPE} \
     --threads=${THREADS} "
 
 DB_DRIVER=mysql 
@@ -61,6 +64,11 @@ drop_pgsql() {
     createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
 }
 
+if [ $DRIVER == "tidb" ]; then
+    mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "set global tidb_disable_txn_auto_retry = off"
+fi
+
+
 case ${TYPE} in
     prepare)
         case ${DB_DRIVER} in
@@ -74,7 +82,7 @@ case ${TYPE} in
         sysbench ${OPTS} oltp_point_select --tables=${TABLES} --table-size=${TABLE_SIZE} prepare
         ;;
     run)
-        sysbench ${OPTS} ${RUN_TYPE} --tables=${TABLES} --table-size=${TABLE_SIZE} run 2>&1 | tee ${OUTPUT}/${DRIVER}_run_${RUN_TYPE}.log
+        sysbench ${OPTS} ${RUN_TYPE} --tables=${TABLES} --table-size=${TABLE_SIZE} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
         ;;
     *)
         echo "type must be prepare|run"

@@ -8,3 +8,4 @@
 ## Sysbench
 
 - [bench.sh](./sysbench/bench.sh): Help you run sysbench to benchmark different databases.
+- [`sysbench-reporter`](./sysbench/reporter): Parse the sysbench results and generate charts.
