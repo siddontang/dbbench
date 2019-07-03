@@ -1,11 +1,5 @@
 package stats
 
-import (
-	"fmt"
-	"path"
-	"path/filepath"
-)
-
 // StatType is the type of different statistics
 type StatType int
 
@@ -95,23 +89,16 @@ func (s *DBStat) Operations() []string {
 // E.g, we can use Git commit as the parent directory for benchmarking special version,
 // use datetime for benchmarking different databases.
 // If pathName is empty, we will use db as the name of DBStat.
-func NewDBStat(db string, workload string, pathName string) *DBStat {
-	s := new(DBStat)
-	s.Summary = make(map[string]*Record, 1)
-	s.Progress = make(map[string][]*Record, 1)
-
-	// We assume we put all logs in one unique directory in each benchmark.
-	// E.g, we can use Git commit as the parent directory for benchmarking special version,
-	// use datetime for benchmarking different databases.
-	if pathName != "" {
-		s.Name = fmt.Sprintf("%s-%s", db, path.Base(filepath.Dir(pathName)))
-	} else {
-		s.Name = db
+func NewDBStat(name string, db string, workload string, pathName string) *DBStat {
+	s := DBStat{
+		Name:     name,
+		Summary:  make(map[string]*Record, 1),
+		Progress: make(map[string][]*Record, 1),
+		DB:       db,
+		Workload: workload,
 	}
-	s.DB = db
-	s.Workload = workload
 
-	return s
+	return &s
 }
 
 // DBStats is the array of DBStat.

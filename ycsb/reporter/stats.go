@@ -1,8 +1,9 @@
-package main
+package reporter
 
 import (
 	"bufio"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -69,7 +70,7 @@ func parse(workload string, pathName string, s *stats.DBStat) error {
 			continue
 		}
 
-		if workload == "laod" {
+		if workload == "load" {
 			op = ""
 		}
 
@@ -92,16 +93,47 @@ func parse(workload string, pathName string, s *stats.DBStat) error {
 	return nil
 }
 
-func newDBStat(db string, workload string, pathName string) (*stats.DBStat, error) {
-	name := pathName
-	if onlyDBName {
-		name = ""
-	}
-	s := stats.NewDBStat(db, workload, name)
+type reporter struct {
+}
+
+func (r reporter) NewDBStat(name string, db string, workload string, pathName string) (*stats.DBStat, error) {
+	s := stats.NewDBStat(name, db, workload, name)
 
 	if err := parse(workload, pathName, s); err != nil {
 		return nil, err
 	}
 
 	return s, nil
+}
+
+func (r reporter) ParseName(pathName string) (db string, workload string) {
+	// We must ensure that the base filename of the YCSB log must be the format of db_workload.log
+	// Now the common workload is load, workloada, workloadb, ... workloadf, if you want to use you own workload,
+	// please use a unique workload name.
+
+	// check db and workload from file name, the name format is:
+	// 	1. db_load.log
+	// 	2. db_workloadx.log
+
+	fileName := path.Base(pathName)
+	seps := strings.Split(fileName, "_")
+
+	if len(seps) != 2 {
+		return "", ""
+	}
+
+	db = seps[0]
+	workload = strings.TrimSuffix(seps[1], ".log")
+	return db, workload
+}
+
+func (r reporter) StatTypes() []stats.StatType {
+	return []stats.StatType{
+		stats.OPS,
+		stats.P99,
+	}
+}
+
+func init() {
+	stats.RegisterReporter("ycsb", reporter{})
 }

@@ -1,4 +1,4 @@
-package main
+package reporter
 
 import (
 	"bufio"
@@ -142,16 +142,37 @@ func parse(workload string, pathName string, s *stats.DBStat) error {
 	return nil
 }
 
-func newDBStat(db string, workload string, pathName string) (*stats.DBStat, error) {
-	name := pathName
-	if onlyDBName {
-		name = ""
-	}
-	s := stats.NewDBStat(db, workload, name)
+type reporter struct {
+}
+
+func (r reporter) NewDBStat(name string, db string, workload string, pathName string) (*stats.DBStat, error) {
+	s := stats.NewDBStat(name, db, workload, name)
 
 	if err := parse(workload, pathName, s); err != nil {
 		return nil, err
 	}
 
 	return s, nil
+}
+
+func (r reporter) ParseName(fileName string) (db string, workload string) {
+	// We must ensure that the base filename of the sysbench log must be the format of db_workload.log
+	// Now the common workload may be oltp_read_write, oltp_update_non_index, etc.	fileName := path.Base(pathName)
+	seps := strings.Split(fileName, "_")
+
+	db = seps[0]
+	workload = strings.TrimSuffix(fileName[len(db)+1:], ".log")
+	return db, workload
+}
+
+func (r reporter) StatTypes() []stats.StatType {
+	return []stats.StatType{
+		stats.TPS,
+		stats.QPS,
+		stats.P95,
+	}
+}
+
+func init() {
+	stats.RegisterReporter("sysbench", reporter{})
 }

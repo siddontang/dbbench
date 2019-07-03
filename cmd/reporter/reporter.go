@@ -1,16 +1,3 @@
-// Copyright 2019 PingCAP, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
@@ -21,11 +8,14 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"sort"
-	"strings"
 
 	"github.com/siddontang/dbbench/pkg/flags"
 	"github.com/siddontang/dbbench/pkg/plot"
 	"github.com/siddontang/dbbench/pkg/stats"
+
+	// Register different benchmark
+	_ "github.com/siddontang/dbbench/sysbench/reporter"
+	_ "github.com/siddontang/dbbench/ycsb/reporter"
 )
 
 var (
@@ -36,18 +26,27 @@ var (
 	onlyDBName      bool
 	plotXLength     int
 	plotYLength     int
+
+	commandLine *flag.FlagSet
 )
 
 func init() {
-	flag.Var(&logPaths, "p", "Log files or directories")
-	flag.StringVar(&outputDir, "o", "./output", "Output directory")
-	flag.IntVar(&plotXLength, "x", 8, "X axis Inch length of Output chart")
-	flag.IntVar(&plotYLength, "y", 4, "Y axis Inch length of Output chart")
+	commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	commandLine.Var(&logPaths, "p", "Log files or directories")
+	commandLine.StringVar(&outputDir, "o", "./output", "Output directory")
+	commandLine.IntVar(&plotXLength, "x", 8, "X axis Inch length of Output chart")
+	commandLine.IntVar(&plotYLength, "y", 4, "Y axis Inch length of Output chart")
 	filterDBs = make(flags.SetFlags, 0)
 	filterWorkloads = make(flags.SetFlags, 0)
-	flag.Var(&filterDBs, "d", "Filter database")
-	flag.Var(&filterWorkloads, "w", "Filter workload")
-	flag.BoolVar(&onlyDBName, "i", false, "Use only db name for identification in the chart")
+	commandLine.Var(&filterDBs, "d", "Filter database")
+	commandLine.Var(&filterWorkloads, "w", "Filter workload")
+	commandLine.BoolVar(&onlyDBName, "i", false, "Use only db name for identification in the chart")
+
+	commandLine.Usage = func() {
+		fmt.Fprintf(commandLine.Output(), "Usage of %s benchmark_name:\n", os.Args[0])
+		commandLine.PrintDefaults()
+	}
 }
 
 func perr(err error) {
@@ -58,17 +57,6 @@ func perr(err error) {
 	fmt.Printf("meet err: %v\n", err)
 	debug.PrintStack()
 	os.Exit(1)
-}
-
-// We must ensure that the base filename of the sysbench log must be the format of db_workload.log
-// Now the common workload may be oltp_read_write, oltp_update_non_index, etc.
-func parseName(pathName string) (db string, workload string) {
-	fileName := path.Base(pathName)
-	seps := strings.Split(fileName, "_")
-
-	db = seps[0]
-	workload = strings.TrimSuffix(fileName[len(db)+1:], ".log")
-	return db, workload
 }
 
 func isFiltered(db string, workload string) bool {
@@ -88,21 +76,31 @@ func isFiltered(db string, workload string) bool {
 }
 
 func main() {
-	flag.Parse()
+	name := os.Args[1]
+	r := stats.GetReporter(name)
+	if r == nil {
+		commandLine.Usage()
+		os.Exit(1)
+	}
+
+	commandLine.Parse(os.Args[2:])
+
+	outputDir = path.Join(outputDir, name)
+
 	workloads := make(map[string]stats.DBStats)
 
 	for _, logPath := range logPaths {
-		err := filepath.Walk(logPath, func(path string, f os.FileInfo, err error) error {
+		err := filepath.Walk(logPath, func(pathName string, f os.FileInfo, err error) error {
 			perr(err)
 
 			if f.IsDir() {
 				return nil
 			}
 
-			path, err = filepath.Abs(path)
+			pathName, err = filepath.Abs(pathName)
 			perr(err)
 
-			db, workload := parseName(path)
+			db, workload := r.ParseName(path.Base(pathName))
 			if db == "" || workload == "" {
 				// invalid format
 				return nil
@@ -111,7 +109,13 @@ func main() {
 				return nil
 			}
 
-			s, err := newDBStat(db, workload, path)
+			// We assume we put all logs in one unique directory in each benchmark.
+			// E.g, we can use Git commit as the parent directory for benchmarking special version.
+			name := db
+			if !onlyDBName {
+				name = fmt.Sprintf("%s-%s", db, path.Base(filepath.Dir(pathName)))
+			}
+			s, err := r.NewDBStat(name, db, workload, pathName)
 			perr(err)
 
 			workloads[workload] = append(workloads[workload], s)
@@ -125,11 +129,7 @@ func main() {
 		OutputDir: outputDir,
 		XLength:   plotXLength,
 		YLength:   plotYLength,
-		StatTypes: []stats.StatType{
-			stats.TPS,
-			stats.QPS,
-			stats.P95,
-		},
+		StatTypes: r.StatTypes(),
 	}
 
 	for workload, stats := range workloads {
