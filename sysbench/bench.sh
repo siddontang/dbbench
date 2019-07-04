@@ -4,6 +4,34 @@ TYPE=$1
 DRIVER=$2
 RUN_TYPE=$3
 
+if [ -z $RUN_TYPE ]; then
+    RUN_TYPE=oltp_point_select
+fi
+
+ROOT=$(pwd)
+
+# TPCC Lua path
+if [ -z $LUA_PATH ]; then
+    LUA_PATH="$ROOT/tpcc/?.lua"
+else
+    LUA_PATH="$LUA_PATH:$ROOT/tpcc/?.lua"   
+fi
+
+export LUA_PATH
+
+RUN_PATH=${RUN_TYPE}
+
+case ${RUN_TYPE} in
+    tpcc)
+    RUN_PATH=./tpcc/tpcc.lua
+    ;;
+    blob)
+    RUN_PATH=./blob/oltp_blob.lua
+    ;;
+    *)
+    ;;
+esac
+
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
 
@@ -32,6 +60,32 @@ OPTS="--report-interval=${REPORT_INTERVAL} \
     --threads=${THREADS} "
 
 DB_DRIVER=mysql 
+
+# For blob
+BLOB_LENGTH=${BLOB_LENGTH:-10240}
+
+# For tpcc
+SCALE=${SCALE:-100}
+USE_FK=${USE_FK:-1}
+
+COMMAND_OPTS=""
+
+case ${RUN_TYPE} in
+    tpcc)
+        COMMAND_OPTS=" --tables=${TABLES} \
+        --scale=${SCALE} \
+        --use-fk=${USE_FK} "
+    ;;
+    blob)
+        COMMAND_OPTS=" --tables=${TABLES} \
+        --table-size=${TABLE_SIZE} \
+        --blob-length=${BLOB_LENGTH} "
+    ;;
+    *)
+        COMMAND_OPTS=" --tables=${TABLES} \
+        --table-size=${TABLE_SIZE} "
+    ;;
+esac
 
 case ${DRIVER} in
     mysql|tidb)
@@ -66,8 +120,13 @@ drop_pgsql() {
 
 if [ $DRIVER == "tidb" ]; then
     mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "set global tidb_disable_txn_auto_retry = off"
-fi
 
+    if [ $RUN_TYPE == "tpcc" ]; then 
+        mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "set global sql_mode = ''"
+    fi 
+
+    OPTS+=" --mysql-ignore-errors=8002"
+fi
 
 case ${TYPE} in
     prepare)
@@ -79,10 +138,11 @@ case ${TYPE} in
             drop_pgsql
             ;;
         esac
-        sysbench ${OPTS} oltp_point_select --tables=${TABLES} --table-size=${TABLE_SIZE} prepare
+        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} prepare
         ;;
     run)
-        sysbench ${OPTS} ${RUN_TYPE} --tables=${TABLES} --table-size=${TABLE_SIZE} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
+        echo ${OPTS}
+        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
         ;;
     *)
         echo "type must be prepare|run"
