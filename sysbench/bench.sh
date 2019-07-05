@@ -10,7 +10,7 @@ fi
 
 ROOT=$(pwd)
 
-export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;$LUA_PATH"
+export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;;"
 
 RUN_PATH=${RUN_TYPE}
 
@@ -101,16 +101,6 @@ case ${DRIVER} in
         ;;
 esac
 
-drop_mysql() {
-    mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "drop database if exists ${DB}"
-    mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "create database if not exists ${DB}"
-}
-
-drop_pgsql() {
-    dropdb -h ${HOST} -p ${PORT} -U ${DB_USER} --if-exists -w ${DB}
-    createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
-}
-
 if [ $DRIVER == "tidb" ]; then
     mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "set global tidb_disable_txn_auto_retry = off"
 
@@ -125,20 +115,23 @@ case ${TYPE} in
     prepare)
         case ${DB_DRIVER} in
             mysql)
-            drop_mysql
+            mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "create database if not exists ${DB}"
             ;;
             pgsql)
-            drop_pgsql
+            createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
             ;;
         esac
+        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} cleanup
         sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} prepare
         ;;
     run)
-        echo ${OPTS}
         sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
         ;;
+    cleanup)
+        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} cleanup
+        ;;
     *)
-        echo "type must be prepare|run"
+        echo "type must be prepare|run|cleanup"
         exit 1
         ;;
 esac
