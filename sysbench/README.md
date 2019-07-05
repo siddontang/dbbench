@@ -29,6 +29,6 @@ PORT=3306 SCALE=100 ./bench.sh run mysql tpcc
 
 ```bash
 # TODO: support more blob commands soon
-PORT=3306 BLOB_LENGTH=1000 ./bench.sh prepare mysql blob 
-PORT=3306 BLOB_LENGTH=1000 ./bench.sh run mysql blob 
+PORT=3306 BLOB_LENGTH=1000 ./bench.sh prepare mysql blob_point_select
+PORT=3306 BLOB_LENGTH=1000 ./bench.sh run mysql blob_update_non_index
 ```

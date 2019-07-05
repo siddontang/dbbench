@@ -10,14 +10,7 @@ fi
 
 ROOT=$(pwd)
 
-# TPCC Lua path
-if [ -z $LUA_PATH ]; then
-    LUA_PATH="$ROOT/tpcc/?.lua"
-else
-    LUA_PATH="$LUA_PATH:$ROOT/tpcc/?.lua"   
-fi
-
-export LUA_PATH
+export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;$LUA_PATH"
 
 RUN_PATH=${RUN_TYPE}
 
@@ -25,8 +18,8 @@ case ${RUN_TYPE} in
     tpcc)
     RUN_PATH=./tpcc/tpcc.lua
     ;;
-    blob)
-    RUN_PATH=./blob/oltp_blob.lua
+    blob_*)
+    RUN_PATH=./blob/${RUN_TYPE}.lua
     ;;
     *)
     ;;
@@ -76,7 +69,7 @@ case ${RUN_TYPE} in
         --scale=${SCALE} \
         --use-fk=${USE_FK} "
     ;;
-    blob)
+    blob_*)
         COMMAND_OPTS=" --tables=${TABLES} \
         --table-size=${TABLE_SIZE} \
         --blob-length=${BLOB_LENGTH} "

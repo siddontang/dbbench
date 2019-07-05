@@ -16,7 +16,7 @@
 -- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 -- -----------------------------------------------------------------------------
--- Common code for OLTP benchmarks.
+-- Common code for Blob benchmarks.
 -- -----------------------------------------------------------------------------
 
 function init()
@@ -286,6 +286,14 @@ function prepare_commit()
 end
 
 function prepare_for_each_table(key)
+   -- Bind with the blob length
+   stmt_defs["non_index_updates"] = {
+      "UPDATE sbtest%u SET c=? WHERE id=?",
+      {t.CHAR, sysbench.opt.blob_length}, t.INT}
+   stmt_defs["inserts"] = {
+      "INSERT INTO sbtest%u (id, k, c, pad) VALUES (?, ?, ?, ?)",
+      t.INT, t.INT, {t.CHAR, sysbench.opt.blob_length}, {t.CHAR, 60}}
+
    for t = 1, sysbench.opt.tables do
       stmt[t][key] = con:prepare(string.format(stmt_defs[key][1], t))
 
@@ -469,7 +477,11 @@ function execute_non_index_updates()
    local tnum = get_table_num()
 
    for i = 1, sysbench.opt.non_index_updates do
-	rs = con:query(([[UPDATE sbtest%d SET c='%s' WHERE id=%d ]]):format(tnum, string.rep(sysbench.rand.string("@"),sysbench.opt.blob_length), get_id() ))
+      local value = sysbench.rand.varstring(sysbench.opt.blob_length, sysbench.opt.blob_length)
+      param[tnum].non_index_updates[1]:set(value)
+      param[tnum].non_index_updates[2]:set(get_id())
+
+      stmt[tnum].non_index_updates:execute()
    end
 end
 
@@ -484,7 +496,10 @@ function execute_delete_inserts()
 
       param[tnum].inserts[1]:set(id)
       param[tnum].inserts[2]:set(k)
-      param[tnum].inserts[3]:set_rand_str(c_value_template)
+
+      local value = sysbench.rand.varstring(sysbench.opt.blob_length, sysbench.opt.blob_length)
+
+      param[tnum].inserts[3]:set(value)
       param[tnum].inserts[4]:set_rand_str(pad_value_template)
 
       stmt[tnum].deletes:execute()
