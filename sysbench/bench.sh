@@ -10,7 +10,7 @@ fi
 
 ROOT=$(pwd)
 
-export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;;"
+export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;$ROOT/bank/?.lua;"
 
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
