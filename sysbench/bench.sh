@@ -12,19 +12,6 @@ ROOT=$(pwd)
 
 export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;;"
 
-RUN_PATH=${RUN_TYPE}
-
-case ${RUN_TYPE} in
-    tpcc)
-    RUN_PATH=./tpcc/tpcc.lua
-    ;;
-    blob_*)
-    RUN_PATH=./blob/${RUN_TYPE}.lua
-    ;;
-    *)
-    ;;
-esac
-
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
 
@@ -121,14 +108,14 @@ case ${TYPE} in
             createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
             ;;
         esac
-        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} cleanup
-        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} prepare
+        sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} cleanup
+        sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} prepare
         ;;
     run)
-        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
+        sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} run 2>&1 | tee ${OUTPUT}/${DRIVER}_${RUN_TYPE}.log
         ;;
     cleanup)
-        sysbench ${OPTS} ${RUN_PATH} ${COMMAND_OPTS} cleanup
+        sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} cleanup
         ;;
     *)
         echo "type must be prepare|run|cleanup"
