@@ -1,16 +1,20 @@
 #!/bin/bash
 
-TYPE=$1
-DRIVER=$2
-RUN_TYPE=$3
-
-if [ -z $RUN_TYPE ]; then
-    RUN_TYPE=oltp_point_select
-fi
+DRIVER=$1
+RUN_TYPE=$2
+TYPE=$3
 
 ROOT=$(pwd)
 
-export LUA_PATH="$ROOT/tpcc/?.lua;$ROOT/blob/?.lua;$ROOT/bank/?.lua;"
+EXT_LIBS=("tpcc" "blob" "bank")
+
+LUA_PATH=""
+for name in ${EXT_LIBS[@]}; do 
+    LUA_PATH+="$ROOT/$name/?.lua;"
+done 
+
+# add default libs
+LUA_PATH+=";"
 
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
