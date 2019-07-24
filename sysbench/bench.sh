@@ -6,7 +6,7 @@ TYPE=$3
 
 ROOT=$(pwd)
 
-EXT_LIBS=("tpcc" "blob" "bank")
+EXT_LIBS=("tpcc" "blob" "bank" "wide")
 
 LUA_PATH=""
 for name in ${EXT_LIBS[@]}; do 
@@ -15,6 +15,7 @@ done
 
 # add default libs
 LUA_PATH+=";"
+export LUA_PATH
 
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
@@ -52,6 +53,9 @@ BLOB_LENGTH=${BLOB_LENGTH:-10240}
 SCALE=${SCALE:-100}
 USE_FK=${USE_FK:-1}
 
+# For wide
+COLUMNS=${COLUMNS:-100}
+
 COMMAND_OPTS=""
 
 case ${RUN_TYPE} in
@@ -65,11 +69,18 @@ case ${RUN_TYPE} in
         --table-size=${TABLE_SIZE} \
         --blob-length=${BLOB_LENGTH} "
     ;;
+    wide_*)
+        COMMAND_OPTS=" --tables=${TABLES} \
+        --table-size=${TABLE_SIZE} \
+        --columns=${COLUMNS}"
+    ;;
     *)
         COMMAND_OPTS=" --tables=${TABLES} \
         --table-size=${TABLE_SIZE} "
     ;;
 esac
+
+COMMAND_OPTS+=" ${@:4}"
 
 case ${DRIVER} in
     mysql|tidb)
@@ -110,6 +121,7 @@ case ${TYPE} in
             ;;
             pgsql)
             createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
+            echo $?
             ;;
         esac
         sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} cleanup
