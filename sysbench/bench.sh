@@ -115,13 +115,15 @@ fi
 
 case ${TYPE} in
     prepare)
-        case ${DB_DRIVER} in
-            mysql)
+        case ${DRIVER} in
+            mysql|tidb)
             mysql -h ${HOST} -P ${PORT} -u ${DB_USER} -e "create database if not exists ${DB}"
             ;;
             pgsql)
             createdb -h ${HOST} -p ${PORT} -U ${DB_USER} -w ${DB}
-            echo $?
+            ;;
+            cockroachdb)
+            cockroach sql --insecure --host=${HOST}:${PORT} -u ${DB_USER} -e "create database if not exists ${DB}"
             ;;
         esac
         sysbench ${OPTS} ${RUN_TYPE} ${COMMAND_OPTS} cleanup

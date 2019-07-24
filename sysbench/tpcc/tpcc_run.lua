@@ -103,8 +103,8 @@ function new_order()
   d_next_o_id, d_tax = con:query_row(([[SELECT d_next_o_id, d_tax 
                                           FROM district%d 
                                          WHERE d_w_id = %d 
-                                           AND d_id = %d FOR UPDATE]]):
-                                        format(table_num, w_id, d_id))
+                                           AND d_id = %d %s]]):
+                                        format(table_num, w_id, d_id, sysbench.opt.for_update))
 
 -- UPDATE district SET d_next_o_id = :d_next_o_id + 1
 --                WHERE d_id = :d_id 
@@ -177,8 +177,8 @@ function new_order()
 
 	s_quantity, s_data, ol_dist_info = con:query_row(([[SELECT s_quantity, s_data, s_dist_%s s_dist 
 	                                                      FROM stock%d  
-	                                                     WHERE s_i_id = %d AND s_w_id= %d FOR UPDATE]]):
-	                                                     format(string.format("%02d",d_id),table_num,ol_i_id,ol_supply_w_id ))
+	                                                     WHERE s_i_id = %d AND s_w_id= %d %s]]):
+	                                                     format(string.format("%02d",d_id),table_num,ol_i_id,ol_supply_w_id,sysbench.opt.for_update ))
      
         s_quantity=tonumber(s_quantity)
   	if (s_quantity > ol_quantity) then
@@ -347,8 +347,8 @@ function payment()
 			    FROM customer%d
 			   WHERE c_w_id = %d 
 			     AND c_d_id= %d
-			     AND c_id=%d FOR UPDATE]])
-			 :format(table_num, w_id, c_d_id, c_id ))
+			     AND c_id=%d %s]])
+			 :format(table_num, w_id, c_d_id, c_id, sysbench.opt.for_update ))
 
   c_balance = tonumber(c_balance) - h_amount
   c_ytd_payment = tonumber(c_ytd_payment) + h_amount
@@ -403,7 +403,7 @@ function payment()
   con:query(([[INSERT INTO history%d
                            (h_c_d_id, h_c_w_id, h_c_id, h_d_id,  h_w_id, h_date, h_amount, h_data)
                     VALUES (%d,%d,%d,%d,%d,NOW(),%d,'%s')]])
-            :format(table_num, c_d_id, c_w_id, c_id, d_id,  w_id, h_amount, string.format("%10s %10s    ",w_name,d_name)))
+            :format(table_num, c_d_id, c_w_id, c_id, d_id,  w_id, h_amount, string.format("%10s %10s   ",w_name,d_name)))
 
   con:query("COMMIT")
 
@@ -569,8 +569,8 @@ function delivery()
                                      FROM new_orders%d 
                                     WHERE no_d_id = %d 
                                       AND no_w_id = %d 
-                                      ORDER BY no_o_id ASC LIMIT 1 FOR UPDATE]])
-                                   :format(table_num, d_id, w_id))
+                                      ORDER BY no_o_id ASC LIMIT 1 %s]])
+                                   :format(table_num, d_id, w_id, sysbench.opt.for_update))
 
         if (rs.nrows > 0) then
           no_o_id=unpack(rs:fetch_row(), 1, rs.nfields)

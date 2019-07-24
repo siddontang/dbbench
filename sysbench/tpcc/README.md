@@ -21,6 +21,12 @@ TPCC-like workload for sysbench 1.0.x.
 ./tpcc.lua --mysql-socket=/tmp/mysql.sock --mysql-user=root --mysql-db=sbt --time=300 --threads=64 --report-interval=1 --tables=10 --scale=100 --db-driver=mysql run
 `
 
+## Run for cockroachdb
+
+`
+./tpcc.lua --pgsql-host=127.0.0.1 --pgsql-port=26257 --pgsql-user=root --pgsql-db=sbt --time=300 --threads=64 --report-interval=1 --tables=10 --scale=100 --db-driver=pgsql --for-update="" --restart-rollback=0 run
+`
+
 # Cleanup 
 
 `

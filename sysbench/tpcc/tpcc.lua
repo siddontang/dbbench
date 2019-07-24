@@ -59,7 +59,9 @@ function event()
 end
 
 function sysbench.hooks.before_restart_event(err)
-  con:query("ROLLBACK")
+   if sysbench.opt.restart_rollback ~= 0 then 
+      con:query("ROLLBACK")
+   end
 end
 
 

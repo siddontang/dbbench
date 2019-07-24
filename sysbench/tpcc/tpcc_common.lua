@@ -60,7 +60,11 @@ sysbench.cmdline.options = {
    mysql_storage_engine =
       {"Storage engine, if MySQL is used", "innodb"},
    mysql_table_options =
-      {"Extra table options, if MySQL is used. e.g. 'COLLATE latin1_bin'", ""}
+      {"Extra table options, if MySQL is used. e.g. 'COLLATE latin1_bin'", ""},
+   for_update = 
+      {"Select with FOR UPDATE", "FOR UPDATE"},
+   restart_rollback = 
+      {"Execute ROLLBACK when restart", 1}
 }
 
 function sleep(n)
@@ -354,6 +358,7 @@ end
 
 
 function set_isolation_level(drv,con)
+   local isolation_level=""
    if drv:name() == "mysql"
    then
         if sysbench.opt.trx_level == "RR" then
@@ -364,7 +369,7 @@ function set_isolation_level(drv,con)
             isolation_level="SERIALIZABLE"
         end
        
-        isolation_variable=con:query_row("SHOW VARIABLES LIKE 't%_isolation'")
+        local isolation_variable=con:query_row("SHOW VARIABLES LIKE 't%_isolation'")
 
         con:query("SET SESSION " .. isolation_variable .. "='".. isolation_level .."'")
    end
