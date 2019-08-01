@@ -1,21 +1,19 @@
 #!/bin/bash
 
-TYPE=$1
-DB=$2
+DB=$1
+TYPE=$2
 
 # go-ycsb path
 CMD=${CMD:-go-ycsb}
 # Output direcotry to save logs
 OUTPUT=${OUTPUT:-./logs/}
 
-WORKLOADS=(a b c d e)
-
-RECORDCOUNT=1000000
-OPERATIONCOUNT=1000000
-THREADCOUNT=100
-FIELDCOUNT=10
-FIELDLENGTH=100
-MAXSCANLENGTH=10
+RECORDCOUNT=${RECORDCOUNT:-1000000}
+OPERATIONCOUNT=${OPERATIONCOUNT:-1000000}
+THREADCOUNT=${THREADCOUNT:-100}
+FIELDCOUNT=${FIELDCOUNT:-10}
+FIELDLENGTH=${FIELDLENGTH:-100}
+MAXSCANLENGTH=${MAXSCANLENGTH:-10}
 
 PROPS="-p recordcount=${RECORDCOUNT} \
     -p operationcount=${OPERATIONCOUNT} \
@@ -23,7 +21,6 @@ PROPS="-p recordcount=${RECORDCOUNT} \
     -p fieldcount=${FIELDCOUNT} \
     -p fieldlength=${FIELDLENGTH} \
     -p maxscanlength=${MAXSCANLENGTH}"
-PROPS+=" ${@:3}"
 
 mkdir -p ${OUTPUT} 
 
@@ -61,6 +58,8 @@ case ${DB} in
     ;;
 esac
 
+PROPS+=" ${@:3}"
+
 if [ ${TYPE} == 'load' ]; then 
     echo "clear data before load"
     PROPS+=" -p dropdata=true"
@@ -70,13 +69,7 @@ echo ${TYPE} ${DB} ${PROPS}
 
 if [ ${TYPE} == 'load' ]; then 
     $CMD load ${DB} -p=workload=core ${PROPS} | tee ${OUTPUT}/${BENCH_DB}_load.log
-elif [ ${TYPE} == 'run' ]; then
-    for workload in ${WORKLOADS[@]}
-    do 
-        $CMD run ${DB} -P ./workloads/workload${workload} ${PROPS} | tee ${OUTPUT}/${BENCH_DB}_workload${workload}.log
-    done
 else
-    echo "invalid type ${TYPE}"
-    exit 1
+    $CMD run ${DB} -P ./workloads/${TYPE} ${PROPS} | tee ${OUTPUT}/${BENCH_DB}_${TYPE}.log
 fi 
 
